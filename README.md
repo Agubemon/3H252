@@ -1,50 +1,22 @@
-# SOLITARIO
+# Solitario 3D (Proyecto Final de Estructuras)
 
-Juego de cartas
-
----
-
-## Instrucciones rápidas
-
-### Requisitos
-
-* Un compilador C++ (g++, clang) y `make`.
-* SFML (bibliotecas de desarrollo). En Ubuntu/Debian:
-
-```
-sudo apt install libsfml-dev build-essential
-```
+Juego de cartas Solitario implementado en C++ con capacidades 3D utilizando la librería SDL2 y OpenGL.
 
 ---
 
-### Compilar y ejecutar (línea de comando)
+## 🛠️ Requisitos del Entorno (MSYS2 MINGW64)
 
-```
-cd /ruta/al/repositorio/SOLITARIO
-make
-./solitario
-```
+Para compilar y ejecutar este proyecto, es necesario tener instalado el entorno **MSYS2 MINGW64** con el compilador GCC y las siguientes librerías de desarrollo:
 
----
+* **SDL2 (Simple DirectMedia Layer)**
+* **GLEW (OpenGL Extension Wrangler)**
+* **OpenGL**
 
-### Ejecutar con script (compila si es necesario)
+### Instalación de Librerías en MSYS2
 
-```
-bash scripts/run.sh
-```
+Si las librerías SDL2 y GLEW no están instaladas, se pueden añadir usando el administrador de paquetes `pacman`:
 
----
-
-### Abrir en Visual Studio Code
-
-* Abre la carpeta `SOLITARIO` en VS Code.
-* `Terminal` → `Run Task...` → `Build (make)` para compilar.
-* `Terminal` → `Run Task...` → `Run Solitario` para ejecutar.
-
----
-
-### Notas
-
-* Si ejecutas dentro de un contenedor sin servidor X (Codespaces/WSL sin X), la ventana gráfica no aparecerá.
-  Ejecuta el juego en tu máquina local o usa VNC/X forwarding.
-* Si quieres, se puede hacer un commit con estos cambios y dejar todo listo en la rama actual.
+```bash
+pacman -S mingw-w64-x86_64-gcc
+pacman -S mingw-w64-x86_64-SDL2
+pacman -S mingw-w64-x86_64-glew
