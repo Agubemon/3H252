@@ -1,30 +1,29 @@
-TARGET = bin/JuegoProyecto.exe
+# Directorios de origen y destino
+SRC_DIR := src
+BIN_DIR := bin
 
-SRCS = main.cpp Deck.cpp Pile.cpp GameManager.cpp
-OBJS = $(SRCS:.cpp=.o)
+SFML := -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lbox2d
 
-CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -g
+# Obtener todos los archivos .cpp en el directorio de origen
+CPP_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 
-SDL_LIBS = -lSDL2
-GL_LIBS = -lglew32 -lopengl32
-LIBS = $(SDL_LIBS) $(GL_LIBS)
+# Generar los nombres de los archivos .exe en el directorio de destino
+EXE_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/%.exe,$(CPP_FILES))
 
-INCLUDES = -I/usr/include/SDL2
+# Regla para compilar cada archivo .cpp y generar el archivo .exe correspondiente
+$(BIN_DIR)/%.exe: $(SRC_DIR)/%.cpp
+	g++ $< -o $@ $(SFML) -Iinclude
 
-# ==========================================================
-# REGLAS DE COMPILACIÓN
-# ==========================================================
+# Regla por defecto para compilar todos los archivos .cpp
+all: $(EXE_FILES)
 
-$(TARGET): $(OBJS)
-	@mkdir -p bin
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(LIBS)
+# Regla para ejecutar cada archivo .exe
+run%: $(BIN_DIR)/%.exe
+	./$<
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# ==========================================================
-# LIMPIAR ARCHIVOS
-# ==========================================================
+# Regla para limpiar los archivos generados
 clean:
-	rm -f *.o *.exe *.out
+	rm -f $(EXE_FILES)
+
+.PHONY: all clean
+.PHONY: run-% 
