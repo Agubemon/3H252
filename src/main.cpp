@@ -104,10 +104,11 @@ int main() {
         foundationPiles.emplace_back(foundationStartX + i * spacingX, foundationY);
     }
     
-    // Mazo restante (stock)
-    std::vector<Card> stockPile;
+    // Mazo restante (stock) - con posición
+    std::vector<Card*> stockPile;
     for (int i = cardIndex; i < allCards.size(); ++i) {
-        stockPile.push_back(allCards[i]);
+        allCards[i].setPosition(50.f, 30.f); // Posición del mazo
+        stockPile.push_back(&allCards[i]);
     }
     
     // Pila de descarte (waste)
@@ -129,6 +130,30 @@ int main() {
             // Mouse presionado - iniciar arrastre
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+
+                // Verificar si se hizo clic en el mazo (stock)
+                sf::FloatRect stockBounds(50.f, 30.f, 142.f, 198.f);
+                if (stockBounds.contains(mousePos) && !stockPile.empty()) {
+                    // Voltear una carta del mazo al waste
+                    Card* topCard = stockPile.back();
+                    stockPile.pop_back();
+                    topCard->flip(); // Voltear boca arriba
+                    wastePile.addCard(*topCard);
+                    continue; // No procesar arrastre
+                }
+
+                // Verificar si se hizo clic en el waste pile
+                if (!wastePile.cards.empty()) {
+                    sf::FloatRect wasteBounds(wastePile.cards.back().getPosition(), sf::Vector2f(142.f, 198.f));
+                    if (wasteBounds.contains(mousePos)) {
+                        isDragging = true;
+                        draggedPileIndex = -2; // Código especial para waste
+                        draggedCardIndex = wastePile.cards.size() - 1;
+                        originalPosition = wastePile.cards.back().getPosition();
+                        dragOffset = mousePos - wastePile.cards.back().getPosition();
+                        continue;
+                    }
+                }
 
                 // Buscar en las pilas del tableau
                 for (int i = 0; i < tableauPiles.size(); ++i) {
@@ -157,8 +182,16 @@ int main() {
 
                     if (!isValidMove) {
                         errorSound.play();
-                        tableauPiles[draggedPileIndex].cards[draggedCardIndex].setPosition(originalPosition.x, originalPosition.y);
-                        tableauPiles[draggedPileIndex].updatePositions();
+                        
+                        if (draggedPileIndex == -2) {
+                            // Carta del waste pile
+                            wastePile.cards[draggedCardIndex].setPosition(originalPosition.x, originalPosition.y);
+                            wastePile.updatePositions();
+                        } else {
+                            // Carta del tableau
+                            tableauPiles[draggedPileIndex].cards[draggedCardIndex].setPosition(originalPosition.x, originalPosition.y);
+                            tableauPiles[draggedPileIndex].updatePositions();
+                        }
                     }
 
                     isDragging = false;
@@ -170,7 +203,19 @@ int main() {
             // Mouse moviéndose - arrastrar carta
             if (event.type == sf::Event::MouseMoved && isDragging) {
                 sf::Vector2f mousePos(event.mouseMove.x, event.mouseMove.y);
-                tableauPiles[draggedPileIndex].cards[draggedCardIndex].setPosition(mousePos.x - dragOffset.x, mousePos.y - dragOffset.y);
+                
+                if (draggedPileIndex == -2) {
+                    // Arrastrando carta del waste
+                    wastePile.cards[draggedCardIndex].setPosition(mousePos.x - dragOffset.x, mousePos.y - dragOffset.y);
+           Dibujar mazo (stock) - si hay cartas, mostrar la de arriba boca abajo
+        if (!stockPile.empty()) {
+            stockPile.back()->draw(window);
+        } else {
+            // Si no hay cartas, mostrar espacio vacío
+            cardOutline.setPosition(50.f, 30.f);
+            window.draw(cardOutline);
+        }draggedPileIndex].cards[draggedCardIndex].setPosition(mousePos.x - dragOffset.x, mousePos.y - dragOffset.y);
+                }
             }
         }
 
