@@ -50,7 +50,8 @@ int main() {
     // Cargar imagen de inicio
     sf::Texture menuTexture;
     if (!menuTexture.loadFromFile("assets/textures/Pantalladeinicio.jpg")) {
-        return -1;
+        // Si no carga la imagen, usar fondo negro
+        // return -1;
     }
     sf::Sprite menuSprite;
     menuSprite.setTexture(menuTexture);
@@ -59,6 +60,23 @@ int main() {
         1150.f / menuTexture.getSize().x,
         700.f / menuTexture.getSize().y
     );
+
+    // Crear botón "Start" grande y centrado
+    sf::RectangleShape startButton(sf::Vector2f(300.f, 80.f));
+    startButton.setPosition(105.f, 570.f); // Ajustado 20px hacia abajo
+    startButton.setFillColor(sf::Color::Red); // Rojo brillante
+    startButton.setOutlineColor(sf::Color::White);
+    startButton.setOutlineThickness(5.f);
+
+    // Cargar fuente para el texto
+    sf::Font font;
+    if (!font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+        // Si no carga, continuar sin texto
+    }
+    sf::Text startText("START", font, 50);
+    startText.setPosition(160.f, 585.f); // Centrado en el botón
+    startText.setFillColor(sf::Color::White);
+    startText.setStyle(sf::Text::Bold);
 
     // Cargar texturas (solo una vez)
     sf::Texture spriteSheet;
@@ -171,9 +189,12 @@ int main() {
 
             // Manejo de eventos según el estado del juego
             if (currentState == GameState::MENU) {
-                // En el menú, cualquier clic inicia el juego
+                // En el menú, solo un clic en el botón Start inicia el juego
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                    currentState = GameState::PLAYING;
+                    sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+                    if (startButton.getGlobalBounds().contains(mousePos)) {
+                        currentState = GameState::PLAYING;
+                    }
                 }
             } else if (currentState == GameState::PLAYING) {
             // Mouse presionado - iniciar arrastre o detectar doble clic
@@ -455,7 +476,9 @@ int main() {
         if (currentState == GameState::MENU) {
             // Pantalla de menú
             window.clear();
-            window.draw(menuSprite);
+            window.draw(menuSprite);       // Primero el fondo
+            window.draw(startButton);       // Luego el botón
+            window.draw(startText);         // Y finalmente el texto
             window.display();
         } else if (currentState == GameState::PLAYING) {
         window.clear(sf::Color(0, 100, 0)); // Verde oscuro
