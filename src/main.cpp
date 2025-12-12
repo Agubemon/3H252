@@ -4,6 +4,7 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <cmath>
 
 // Estructura para una pila visual de cartas
 struct VisualPile {
@@ -40,7 +41,7 @@ struct VisualPile {
 
 int main() {
     // Crear ventana más grande para el tablero completo
-    sf::RenderWindow window(sf::VideoMode(1000, 700), "Solitario Klondike");
+    sf::RenderWindow window(sf::VideoMode(1150, 700), "Solitario Klondike");
 
     // Cargar texturas (solo una vez)
     sf::Texture spriteSheet;
@@ -60,6 +61,16 @@ int main() {
     }
     sf::Sound errorSound;
     errorSound.setBuffer(errorBuffer);
+    
+    // Cargar sonido de victoria
+    sf::SoundBuffer winBuffer;
+    if (!winBuffer.loadFromFile("assets/Sounds/AudioGanar.wav")) {
+        // Si no se carga, continúa sin sonido
+    }
+    sf::Sound winSound;
+    winSound.setBuffer(winBuffer);
+    
+    bool gameWon = false; // Para reproducir el sonido solo una vez
 
     // Crear y barajar el mazo (52 cartas)
     std::vector<Card> allCards;
@@ -104,7 +115,7 @@ int main() {
     
     // Crear espacios para Foundation (4 pilas superiores derecha)
     std::vector<VisualPile> foundationPiles;
-    float foundationStartX = 600.f;
+    float foundationStartX = 520.f;
     float foundationY = 30.f;
     
     for (int i = 0; i < 4; ++i) {
@@ -129,6 +140,11 @@ int main() {
     int draggedCardIndex = -1;
     sf::Vector2f originalPosition;
     sf::Vector2f dragOffset;
+    
+    // Variables para detectar doble clic
+    sf::Clock doubleClock;
+    sf::Time lastClickTime = sf::Time::Zero;
+    const sf::Time doubleClickThreshold = sf::milliseconds(300);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -136,22 +152,112 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
 
-            // Mouse presionado - iniciar arrastre
+            // Mouse presionado - iniciar arrastre o detectar doble clic
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+                
+                sf::Time currentTime = doubleClock.getElapsedTime();
+                bool isDoubleClick = (currentTime - lastClickTime) < doubleClickThreshold;
+                lastClickTime = currentTime;
 
                 // Verificar si se hizo clic en el mazo (stock)
                 sf::FloatRect stockBounds(50.f, 30.f, 142.f, 198.f);
-                if (stockBounds.contains(mousePos) && !stockPile.empty()) {
-                    // Voltear una carta del mazo al waste
-                    Card* topCard = stockPile.back();
-                    stockPile.pop_back();
-                    topCard->flip(); // Voltear boca arriba
-                    wastePile.addCard(*topCard);
+                if (stockBounds.contains(mousePos)) {
+                    if (!stockPile.empty()) {
+                        // Voltear una carta del mazo al waste
+                        Card* topCard = stockPile.back();
+                        stockPile.pop_back();
+                        topCard->flip(); // Voltear boca arriba
+                        wastePile.addCard(*topCard);
+                    } else if (!wastePile.cards.empty()) {
+                        // Si el mazo está vacío pero hay cartas en waste, reciclar
+                        // Mover todas las cartas del waste de vuelta al stock
+                        while (!wastePile.cards.empty()) {
+                            Card& card = wastePile.cards.back();
+                            card.flip(); // Voltear boca abajo
+                            card.setPosition(50.f, 30.f); // Posición del stock
+                            stockPile.push_back(&card);
+                            wastePile.cards.pop_back();
+                        }
+                        // Invertir el orden para que la última carta volteada sea la primera en salir
+                        std::reverse(stockPile.begin(), stockPile.end());
+                    }
                     continue; // No procesar arrastre
                 }
+                
+                // Función para intentar mover carta a Foundation automáticamente
+                auto tryAutoMoveToFoundation = [&](Card* card, int sourcePileIndex) {
+                    // Buscar Foundation apropiada
+                    for (int i = 0; i < 4; ++i) {
+                        if (foundationPiles[i].cards.empty()) {
+                            // Pila vacía: solo acepta As
+                            if (card->getRank() == Rank::ACE) {
+                                foundationPiles[i].addCard(*card);
+                                
+                                // Remover de origen
+                                if (sourcePileIndex == -2) {
+                                    wastePile.cards.pop_back();
+                                } else {
+                                    tableauPiles[sourcePileIndex].cards.pop_back();
+                                    // Voltear siguiente carta
+                                    if (!tableauPiles[sourcePileIndex].cards.empty()) {
+                                        Card& nextCard = tableauPiles[sourcePileIndex].cards.back();
+                                        if (!nextCard.faceUp()) nextCard.flip();
+                                    }
+                                }
+                                return true;
+                            }
+                        } else {
+                            // Pila con cartas: verificar si coincide
+                            Card& topCard = foundationPiles[i].cards.back();
+                            if (card->getSuit() == topCard.getSuit() &&
+                                (int)card->getRank() == (int)topCard.getRank() + 1) {
+                                foundationPiles[i].addCard(*card);
+                                
+                                // Remover de origen
+                                if (sourcePileIndex == -2) {
+                                    wastePile.cards.pop_back();
+                                } else {
+                                    tableauPiles[sourcePileIndex].cards.pop_back();
+                                    // Voltear siguiente carta
+                                    if (!tableauPiles[sourcePileIndex].cards.empty()) {
+                                        Card& nextCard = tableauPiles[sourcePileIndex].cards.back();
+                                        if (!nextCard.faceUp()) nextCard.flip();
+                                    }
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                };
 
-                // Verificar si se hizo clic en el waste pile
+                // Verificar doble clic en waste pile
+                if (isDoubleClick && !wastePile.cards.empty()) {
+                    sf::FloatRect wasteBounds(wastePile.cards.back().getPosition(), sf::Vector2f(142.f, 198.f));
+                    if (wasteBounds.contains(mousePos)) {
+                        tryAutoMoveToFoundation(&wastePile.cards.back(), -2);
+                        continue;
+                    }
+                }
+                
+                // Verificar doble clic en tableau
+                if (isDoubleClick) {
+                    for (int i = 0; i < tableauPiles.size(); ++i) {
+                        if (!tableauPiles[i].cards.empty()) {
+                            Card& topCard = tableauPiles[i].cards.back();
+                            if (topCard.faceUp()) {
+                                sf::FloatRect bounds(topCard.getPosition(), sf::Vector2f(142.f, 198.f));
+                                if (bounds.contains(mousePos)) {
+                                    tryAutoMoveToFoundation(&topCard, i);
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Verificar si se hizo clic en el waste pile (para arrastrar)
                 if (!wastePile.cards.empty()) {
                     sf::FloatRect wasteBounds(wastePile.cards.back().getPosition(), sf::Vector2f(142.f, 198.f));
                     if (wasteBounds.contains(mousePos)) {
@@ -279,8 +385,15 @@ int main() {
                             }
                         }
                     } else {
-                        // Movimiento inválido
-                        errorSound.play();
+                        // Verificar si hubo un movimiento significativo (más de 50 píxeles)
+                        sf::Vector2f currentPos = draggedCard->getPosition();
+                        float distance = std::sqrt(std::pow(currentPos.x - originalPosition.x, 2) + 
+                                                   std::pow(currentPos.y - originalPosition.y, 2));
+                        
+                        if (distance > 50.f) {
+                            // Solo reproducir sonido si realmente intentó mover la carta
+                            errorSound.play();
+                        }
                         
                         if (draggedPileIndex == -2) {
                             // Carta del waste pile
@@ -314,6 +427,21 @@ int main() {
         }
 
         window.clear(sf::Color(0, 100, 0)); // Verde oscuro
+        
+        // Verificar condición de victoria
+        if (!gameWon) {
+            bool allFoundationsFull = true;
+            for (const auto& pile : foundationPiles) {
+                if (pile.cards.size() != 13) {
+                    allFoundationsFull = false;
+                    break;
+                }
+            }
+            if (allFoundationsFull) {
+                gameWon = true;
+                winSound.play();
+            }
+        }
 
         // Dibujar fondo para las posiciones del mazo y fundaciones
         sf::RectangleShape cardOutline(sf::Vector2f(142.f, 198.f));
