@@ -73,10 +73,63 @@ int main() {
     if (!font.loadFromFile("assets/font/MarysonRough_PERSONAL_USE_ONLY.otf")) {
         // Si no carga, continuar sin texto
     }
+    
+    // Cargar iconos de bocina
+    sf::Texture speakerOnTexture;
+    if (!speakerOnTexture.loadFromFile("assets/textures/ImagenBocina.png")) {
+        // Si no carga, continuar
+    }
+    sf::Texture speakerOffTexture;
+    if (!speakerOffTexture.loadFromFile("assets/textures/ImagenBocinaPausa.png")) {
+        // Si no carga, continuar
+    }
     sf::Text startText("START", font, 50);
     startText.setPosition(160.f, 585.f); // Centrado en el botón
     startText.setFillColor(sf::Color::Black); // Negro
     startText.setStyle(sf::Text::Bold);
+
+    // Crear botón "Close"
+    sf::RectangleShape closeButton(sf::Vector2f(300.f, 30.f));
+    closeButton.setPosition(0.f, 620.f); // Subido 30px
+    closeButton.setFillColor(sf::Color::Transparent);
+    closeButton.setOutlineColor(sf::Color::Transparent);
+    closeButton.setOutlineThickness(0.f);
+
+    sf::Text closeText("CLOSE", font, 25);
+    closeText.setPosition(55.f, 622.f); // Ajustado
+    closeText.setFillColor(sf::Color::Black);
+    closeText.setStyle(sf::Text::Bold);
+
+    // Crear botón "Back"
+    sf::RectangleShape backButton(sf::Vector2f(300.f, 30.f));
+    backButton.setPosition(0.f, 589.f); // Subido 30px
+    backButton.setFillColor(sf::Color::Transparent);
+    backButton.setOutlineColor(sf::Color::Transparent);
+    backButton.setOutlineThickness(0.f);
+
+    sf::Text backText("BACK", font, 25);
+    backText.setPosition(55.f, 591.f); // Ajustado
+    backText.setFillColor(sf::Color::Black);
+    backText.setStyle(sf::Text::Bold);
+
+    // Crear botón "A" para pausar música
+    sf::RectangleShape pauseButton(sf::Vector2f(30.f, 30.f));
+    pauseButton.setPosition(0.f, 558.f); // Subido 30px
+    pauseButton.setFillColor(sf::Color::Transparent);
+    pauseButton.setOutlineColor(sf::Color::Transparent);
+    pauseButton.setOutlineThickness(0.f);
+
+    // Sprites de bocina
+    sf::Sprite speakerOnSprite(speakerOnTexture);
+    speakerOnSprite.setPosition(5.f, 560.f);
+    // Escalar al tamaño deseado (25px)
+    float scaleOn = 25.f / speakerOnTexture.getSize().x;
+    speakerOnSprite.setScale(scaleOn, scaleOn);
+    
+    sf::Sprite speakerOffSprite(speakerOffTexture);
+    speakerOffSprite.setPosition(5.f, 560.f);
+    float scaleOff = 25.f / speakerOffTexture.getSize().x;
+    speakerOffSprite.setScale(scaleOff, scaleOff);
 
     // Cargar texturas (solo una vez)
     sf::Texture spriteSheet;
@@ -96,7 +149,7 @@ int main() {
     }
     sf::Sound errorSound;
     errorSound.setBuffer(errorBuffer);
-    errorSound.setVolume(10.f); // Volumen al 10% (0-100)
+    errorSound.setVolume(5.f); // Volumen al 5% (0-100)
     
     // Cargar sonido de victoria
     sf::SoundBuffer winBuffer;
@@ -105,8 +158,30 @@ int main() {
     }
     sf::Sound winSound;
     winSound.setBuffer(winBuffer);
+    winSound.setVolume(5.f); // Volumen al 5% (0-100)
     
     bool gameWon = false; // Para reproducir el sonido solo una vez
+
+    // Cargar música de fondo para pantalla de inicio
+    sf::Music menuMusic;
+    if (!menuMusic.openFromFile("assets/Sounds/AudioPantalladeInicio.wav")) {
+        // Si no carga, continuar sin música
+    }
+    menuMusic.setLoop(true); // Repetir en loop
+    menuMusic.setVolume(30.f); // Volumen al 30%
+    
+    // Cargar música de fondo para pantalla de juego
+    sf::Music gameMusic;
+    if (!gameMusic.openFromFile("assets/Sounds/AudioPantalladeIjuego.wav")) {
+        // Si no carga, continuar sin música
+    }
+    gameMusic.setLoop(true); // Repetir en loop
+    gameMusic.setVolume(30.f); // Volumen al 30%
+    
+    // Iniciar música del menú
+    menuMusic.play();
+    
+    bool musicPaused = false; // Estado de pausa de la música
 
     // Crear y barajar el mazo (52 cartas)
     std::vector<Card> allCards;
@@ -193,7 +268,23 @@ int main() {
                 // En el menú, solo un clic en el botón Start inicia el juego
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+                    
+                    // Botón para pausar/reanudar música
+                    if (pauseButton.getGlobalBounds().contains(mousePos)) {
+                        if (musicPaused) {
+                            menuMusic.play();
+                            musicPaused = false;
+                        } else {
+                            menuMusic.pause();
+                            musicPaused = true;
+                        }
+                        continue;
+                    }
+                    
                     if (startButton.getGlobalBounds().contains(mousePos)) {
+                        // Cambiar al juego sin iniciar música
+                        menuMusic.stop();
+                        musicPaused = false;
                         currentState = GameState::PLAYING;
                     }
                 }
@@ -201,6 +292,32 @@ int main() {
             // Mouse presionado - iniciar arrastre o detectar doble clic
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+                
+                // Verificar si se hizo clic en el botón Close
+                if (closeButton.getGlobalBounds().contains(mousePos)) {
+                    window.close(); // Cerrar el programa
+                    continue;
+                }
+                
+                // Verificar si se hizo clic en el botón Back
+                if (backButton.getGlobalBounds().contains(mousePos)) {
+                    // Cambiar de música al regresar al menú
+                    gameMusic.stop();
+                    menuMusic.play();
+                    musicPaused = false;
+                    currentState = GameState::MENU; // Regresar al menú
+                    continue;
+                }
+                
+                // Botón para iniciar/pausar música
+                if (pauseButton.getGlobalBounds().contains(mousePos)) {
+                    if (gameMusic.getStatus() == sf::Music::Playing) {
+                        gameMusic.pause();
+                    } else {
+                        gameMusic.play();
+                    }
+                    continue;
+                }
                 
                 sf::Time currentTime = doubleClock.getElapsedTime();
                 bool isDoubleClick = (currentTime - lastClickTime) < doubleClickThreshold;
@@ -480,6 +597,12 @@ int main() {
             window.draw(menuSprite);       // Primero el fondo
             window.draw(startButton);       // Luego el botón
             window.draw(startText);         // Y finalmente el texto
+            // Dibujar bocina según estado en el menú
+            if (menuMusic.getStatus() == sf::Music::Playing) {
+                window.draw(speakerOnSprite);
+            } else {
+                window.draw(speakerOffSprite);
+            }
             window.display();
         } else if (currentState == GameState::PLAYING) {
         window.clear(sf::Color(0, 100, 0)); // Verde oscuro
@@ -533,6 +656,21 @@ int main() {
         // Dibujar las 7 pilas del tableau
         for (auto& pile : tableauPiles) {
             pile.draw(window);
+        }
+
+        // Dibujar botón Close en la pantalla del juego
+        window.draw(closeButton);
+        window.draw(closeText);
+        
+        // Dibujar botón Back
+        window.draw(backButton);
+        window.draw(backText);
+        
+        // Dibujar botón de bocina según estado
+        if (gameMusic.getStatus() == sf::Music::Playing) {
+            window.draw(speakerOnSprite); // Música activa
+        } else {
+            window.draw(speakerOffSprite); // Música pausada
         }
 
         window.display();
