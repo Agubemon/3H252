@@ -43,6 +43,23 @@ int main() {
     // Crear ventana más grande para el tablero completo
     sf::RenderWindow window(sf::VideoMode(1150, 700), "Solitario Klondike");
 
+    // Estados del juego
+    enum class GameState { MENU, PLAYING };
+    GameState currentState = GameState::MENU;
+
+    // Cargar imagen de inicio
+    sf::Texture menuTexture;
+    if (!menuTexture.loadFromFile("assets/textures/Pantalladeinicio.jpg")) {
+        return -1;
+    }
+    sf::Sprite menuSprite;
+    menuSprite.setTexture(menuTexture);
+    // Escalar la imagen para llenar la ventana
+    menuSprite.setScale(
+        1150.f / menuTexture.getSize().x,
+        700.f / menuTexture.getSize().y
+    );
+
     // Cargar texturas (solo una vez)
     sf::Texture spriteSheet;
     if (!spriteSheet.loadFromFile("assets/textures/sprite.png")) {
@@ -152,6 +169,13 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
 
+            // Manejo de eventos según el estado del juego
+            if (currentState == GameState::MENU) {
+                // En el menú, cualquier clic inicia el juego
+                if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                    currentState = GameState::PLAYING;
+                }
+            } else if (currentState == GameState::PLAYING) {
             // Mouse presionado - iniciar arrastre o detectar doble clic
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
@@ -424,8 +448,16 @@ int main() {
                     tableauPiles[draggedPileIndex].cards[draggedCardIndex].setPosition(mousePos.x - dragOffset.x, mousePos.y - dragOffset.y);
                 }
             }
+            } // Fin del if currentState == PLAYING
         }
 
+        // Renderizado según el estado
+        if (currentState == GameState::MENU) {
+            // Pantalla de menú
+            window.clear();
+            window.draw(menuSprite);
+            window.display();
+        } else if (currentState == GameState::PLAYING) {
         window.clear(sf::Color(0, 100, 0)); // Verde oscuro
         
         // Verificar condición de victoria
@@ -480,6 +512,7 @@ int main() {
         }
 
         window.display();
+        } // Fin del if currentState == PLAYING
     }
 
     return 0;
