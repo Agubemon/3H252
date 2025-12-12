@@ -186,6 +186,7 @@ int main() {
                 if (isDragging) {
                     bool isValidMove = false;
                     int targetFoundationIndex = -1;
+                    int targetTableauIndex = -1;
                     
                     sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
                     
@@ -220,10 +221,49 @@ int main() {
                             break;
                         }
                     }
+                    
+                    // Si no es Foundation, verificar Tableau
+                    if (!isValidMove && targetFoundationIndex == -1) {
+                        for (int i = 0; i < tableauPiles.size(); ++i) {
+                            // Calcular bounds del área de la pila
+                            sf::FloatRect tableauBounds(startX + i * spacingX, startY, 142.f, 400.f);
+                            if (tableauBounds.contains(mousePos)) {
+                                targetTableauIndex = i;
+                                
+                                // No permitir mover carta a su misma pila
+                                if (draggedPileIndex == i) {
+                                    break;
+                                }
+                                
+                                // Validar reglas de Tableau
+                                if (tableauPiles[i].cards.empty()) {
+                                    // Pila vacía: solo acepta Rey
+                                    if (draggedCard->getRank() == Rank::KING) {
+                                        isValidMove = true;
+                                    }
+                                } else {
+                                    // Pila con cartas: debe ser rango menor en 1 y color diferente
+                                    Card& topCard = tableauPiles[i].cards.back();
+                                    if (topCard.faceUp()) { // Solo si la carta superior está boca arriba
+                                        if ((int)draggedCard->getRank() == (int)topCard.getRank() - 1 &&
+                                            draggedCard->isRed() != topCard.isRed()) {
+                                            isValidMove = true;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
 
-                    if (isValidMove && targetFoundationIndex != -1) {
-                        // Mover la carta a la Foundation pile
-                        foundationPiles[targetFoundationIndex].addCard(*draggedCard);
+                    if (isValidMove) {
+                        if (targetFoundationIndex != -1) {
+                            // Mover la carta a la Foundation pile
+                            foundationPiles[targetFoundationIndex].addCard(*draggedCard);
+                        } else if (targetTableauIndex != -1) {
+                            // Mover la carta al Tableau pile
+                            tableauPiles[targetTableauIndex].addCard(*draggedCard);
+                        }
                         
                         // Remover la carta de su origen
                         if (draggedPileIndex == -2) {

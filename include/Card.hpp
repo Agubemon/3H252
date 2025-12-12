@@ -5,7 +5,7 @@
 #include <string>
 
 // Enum para el PALO (Suit)
-enum class Suit { CLUBS = 0, DIAMONDS, HEARTS, SPADES };
+enum class Suit { HEARTS = 0, SPADES, DIAMONDS, CLUBS };
 
 // Enum para el VALOR (Rank)
 enum class Rank { ACE = 1, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING };
@@ -44,6 +44,10 @@ public:
     // Obtener información de la carta
     Suit getSuit() const { return suit; }
     Rank getRank() const { return rank; }
+    
+    // Verificar color de la carta
+    bool isRed() const { return suit == Suit::HEARTS || suit == Suit::DIAMONDS; }
+    bool isBlack() const { return suit == Suit::SPADES || suit == Suit::CLUBS; }
 };
 
 #endif
