@@ -64,18 +64,18 @@ int main() {
     // Crear botón "Start" grande y centrado
     sf::RectangleShape startButton(sf::Vector2f(300.f, 80.f));
     startButton.setPosition(105.f, 570.f); // Ajustado 20px hacia abajo
-    startButton.setFillColor(sf::Color::Red); // Rojo brillante
-    startButton.setOutlineColor(sf::Color::White);
-    startButton.setOutlineThickness(5.f);
+    startButton.setFillColor(sf::Color::Transparent); // Transparente
+    startButton.setOutlineColor(sf::Color::Transparent); // Sin contorno
+    startButton.setOutlineThickness(0.f);
 
     // Cargar fuente para el texto
     sf::Font font;
-    if (!font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+    if (!font.loadFromFile("assets/font/MarysonRough_PERSONAL_USE_ONLY.otf")) {
         // Si no carga, continuar sin texto
     }
     sf::Text startText("START", font, 50);
     startText.setPosition(160.f, 585.f); // Centrado en el botón
-    startText.setFillColor(sf::Color::White);
+    startText.setFillColor(sf::Color::Black); // Negro
     startText.setStyle(sf::Text::Bold);
 
     // Cargar texturas (solo una vez)
@@ -96,6 +96,7 @@ int main() {
     }
     sf::Sound errorSound;
     errorSound.setBuffer(errorBuffer);
+    errorSound.setVolume(10.f); // Volumen al 10% (0-100)
     
     // Cargar sonido de victoria
     sf::SoundBuffer winBuffer;
@@ -123,8 +124,8 @@ int main() {
     // Crear las 7 pilas del tableau (mesa)
     std::vector<VisualPile> tableauPiles;
     float startX = 50.f;
-    float startY = 250.f;
-    float spacingX = 140.f;
+    float startY = 275.f; // 10px más hacia abajo
+    float spacingX = 151.f; // 1px extra de separación entre columnas
     
     for (int i = 0; i < 7; ++i) {
         tableauPiles.emplace_back(startX + i * spacingX, startY);
