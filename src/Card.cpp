@@ -20,21 +20,6 @@ Card::Card(Suit s, Rank r, sf::Texture& spriteSheet, sf::Texture& backTex, float
     backTexture = backTex;
 }
 
-// Constructor anterior (compatibilidad con código viejo)
-Card::Card(const std::string& frontPath, const std::string& backPath, float x, float y) 
-    : suit(Suit::CLUBS), rank(Rank::ACE), isFaceUp(false) {
-    
-    if (!cardTexture.loadFromFile(frontPath)) {
-        std::cerr << "Error al cargar la textura frontal: " << frontPath << std::endl;
-    }
-    if (!backTexture.loadFromFile(backPath)) {
-        std::cerr << "Error al cargar la textura trasera: " << backPath << std::endl;
-    }
-
-    sprite.setTexture(backTexture);
-    sprite.setPosition(x, y);
-}
-
 void Card::flip() {
     if (isFaceUp) {
         sprite.setTexture(backTexture);

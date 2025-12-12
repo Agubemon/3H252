@@ -25,9 +25,6 @@ private:
 public:
     // Constructor: recibe Suit y Rank
     Card(Suit s, Rank r, sf::Texture& spriteSheet, sf::Texture& backTex, float x = 0.f, float y = 0.f);
-    
-    // Constructor anterior (mantener compatibilidad)
-    Card(const std::string& frontPath, const std::string& backPath, float x = 0.f, float y = 0.f);
 
     // Voltear carta
     void flip();
