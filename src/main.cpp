@@ -41,7 +41,7 @@ struct VisualPile {
 
 int main() {
     // Crear ventana más grande para el tablero completo
-    sf::RenderWindow window(sf::VideoMode(1150, 700), "Solitario Klondike");
+    sf::RenderWindow window(sf::VideoMode(1150, 700), "Solitario Navideño");
 
     // Estados del juego
     enum class GameState { MENU, PLAYING };
@@ -85,7 +85,7 @@ int main() {
     }
     sf::Text startText("START", font, 50);
     startText.setPosition(160.f, 585.f); // Centrado en el botón
-    startText.setFillColor(sf::Color::Black); // Negro
+    startText.setFillColor(sf::Color::White); // Blanco
     startText.setStyle(sf::Text::Bold);
 
     // Crear botón "Close"
@@ -97,7 +97,7 @@ int main() {
 
     sf::Text closeText("CLOSE", font, 25);
     closeText.setPosition(55.f, 622.f); // Ajustado
-    closeText.setFillColor(sf::Color::Black);
+    closeText.setFillColor(sf::Color::White);
     closeText.setStyle(sf::Text::Bold);
 
     // Crear botón "Back"
@@ -109,7 +109,7 @@ int main() {
 
     sf::Text backText("BACK", font, 25);
     backText.setPosition(55.f, 591.f); // Ajustado
-    backText.setFillColor(sf::Color::Black);
+    backText.setFillColor(sf::Color::White);
     backText.setStyle(sf::Text::Bold);
 
     // Crear botón "A" para pausar música
