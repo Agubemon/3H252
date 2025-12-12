@@ -10,8 +10,9 @@ struct VisualPile {
     std::vector<Card> cards;
     sf::Vector2f position;
     float offsetY = 30.f; // Separación vertical entre cartas
+    bool showOnlyTop = false; // Si es true, solo muestra la carta superior
     
-    VisualPile(float x, float y) : position(x, y) {}
+    VisualPile(float x, float y, bool onlyTop = false) : position(x, y), showOnlyTop(onlyTop) {}
     
     void addCard(Card& card) {
         cards.push_back(card);
@@ -25,8 +26,14 @@ struct VisualPile {
     }
     
     void draw(sf::RenderWindow& window) {
-        for (auto& card : cards) {
-            card.draw(window);
+        if (showOnlyTop && !cards.empty()) {
+            // Solo dibujar la carta superior
+            cards.back().draw(window);
+        } else {
+            // Dibujar todas las cartas
+            for (auto& card : cards) {
+                card.draw(window);
+            }
         }
     }
 };
@@ -101,7 +108,8 @@ int main() {
     float foundationY = 30.f;
     
     for (int i = 0; i < 4; ++i) {
-        foundationPiles.emplace_back(foundationStartX + i * spacingX, foundationY);
+        foundationPiles.emplace_back(foundationStartX + i * spacingX, foundationY, true);
+        foundationPiles[i].offsetY = 0.f; // Sin separación, apiladas en la misma posición
     }
     
     // Mazo restante (stock) - con posición
@@ -111,8 +119,9 @@ int main() {
         stockPile.push_back(&allCards[i]);
     }
     
-    // Pila de descarte (waste)
-    VisualPile wastePile(200.f, 30.f);
+    // Pila de descarte (waste) - solo muestra la carta superior, sin separación
+    VisualPile wastePile(200.f, 30.f, true);
+    wastePile.offsetY = 0.f; // Sin separación vertical, todas en la misma posición
 
     // Variables para arrastrar cartas
     bool isDragging = false;
@@ -176,11 +185,61 @@ int main() {
             if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
                 if (isDragging) {
                     bool isValidMove = false;
+                    int targetFoundationIndex = -1;
                     
-                    // Por ahora, todos los movimientos son inválidos
-                    // TODO: Implementar validación con canPlaceCard()
+                    sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+                    
+                    // Obtener la carta que se está arrastrando
+                    Card* draggedCard = nullptr;
+                    if (draggedPileIndex == -2) {
+                        draggedCard = &wastePile.cards[draggedCardIndex];
+                    } else {
+                        draggedCard = &tableauPiles[draggedPileIndex].cards[draggedCardIndex];
+                    }
+                    
+                    // Verificar si se soltó sobre una Foundation pile
+                    for (int i = 0; i < 4; ++i) {
+                        sf::FloatRect foundationBounds(foundationStartX + i * spacingX, foundationY, 142.f, 198.f);
+                        if (foundationBounds.contains(mousePos)) {
+                            targetFoundationIndex = i;
+                            
+                            // Validar reglas de Foundation
+                            if (foundationPiles[i].cards.empty()) {
+                                // Pila vacía: solo acepta As
+                                if (draggedCard->getRank() == Rank::ACE) {
+                                    isValidMove = true;
+                                }
+                            } else {
+                                // Pila con cartas: debe ser mismo palo y rango consecutivo
+                                Card& topCard = foundationPiles[i].cards.back();
+                                if (draggedCard->getSuit() == topCard.getSuit() &&
+                                    (int)draggedCard->getRank() == (int)topCard.getRank() + 1) {
+                                    isValidMove = true;
+                                }
+                            }
+                            break;
+                        }
+                    }
 
-                    if (!isValidMove) {
+                    if (isValidMove && targetFoundationIndex != -1) {
+                        // Mover la carta a la Foundation pile
+                        foundationPiles[targetFoundationIndex].addCard(*draggedCard);
+                        
+                        // Remover la carta de su origen
+                        if (draggedPileIndex == -2) {
+                            wastePile.cards.pop_back();
+                        } else {
+                            tableauPiles[draggedPileIndex].cards.pop_back();
+                            // Voltear la siguiente carta si existe
+                            if (!tableauPiles[draggedPileIndex].cards.empty()) {
+                                Card& nextCard = tableauPiles[draggedPileIndex].cards.back();
+                                if (!nextCard.faceUp()) {
+                                    nextCard.flip();
+                                }
+                            }
+                        }
+                    } else {
+                        // Movimiento inválido
                         errorSound.play();
                         
                         if (draggedPileIndex == -2) {
@@ -207,14 +266,9 @@ int main() {
                 if (draggedPileIndex == -2) {
                     // Arrastrando carta del waste
                     wastePile.cards[draggedCardIndex].setPosition(mousePos.x - dragOffset.x, mousePos.y - dragOffset.y);
-           Dibujar mazo (stock) - si hay cartas, mostrar la de arriba boca abajo
-        if (!stockPile.empty()) {
-            stockPile.back()->draw(window);
-        } else {
-            // Si no hay cartas, mostrar espacio vacío
-            cardOutline.setPosition(50.f, 30.f);
-            window.draw(cardOutline);
-        }draggedPileIndex].cards[draggedCardIndex].setPosition(mousePos.x - dragOffset.x, mousePos.y - dragOffset.y);
+                } else {
+                    // Arrastrando carta del tableau
+                    tableauPiles[draggedPileIndex].cards[draggedCardIndex].setPosition(mousePos.x - dragOffset.x, mousePos.y - dragOffset.y);
                 }
             }
         }
@@ -227,9 +281,20 @@ int main() {
         cardOutline.setOutlineColor(sf::Color::White);
         cardOutline.setOutlineThickness(2.f);
         
-        // Mazo (stock) - esquina superior izquierda
-        cardOutline.setPosition(50.f, 30.f);
-        window.draw(cardOutline);
+        // Dibujar mazo (stock) - si hay cartas, mostrar la de arriba boca abajo
+        if (!stockPile.empty()) {
+            stockPile.back()->draw(window);
+        } else {
+            // Si no hay cartas, mostrar espacio vacío
+            cardOutline.setPosition(50.f, 30.f);
+            window.draw(cardOutline);
+        }
+        
+        // Espacio para waste pile (vacío si no hay cartas)
+        if (wastePile.cards.empty()) {
+            cardOutline.setPosition(200.f, 30.f);
+            window.draw(cardOutline);
+        }
         
         // Pila de descarte (waste)
         wastePile.draw(window);
