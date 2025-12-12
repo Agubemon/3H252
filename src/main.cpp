@@ -4,13 +4,26 @@
 
 int main() {
     // Crear ventana
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Fase 4 - Voltear Cartas");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Solitario - Sprite Sheet");
 
-    // Crear cartas
+    // Cargar texturas (solo una vez)
+    sf::Texture spriteSheet;
+    if (!spriteSheet.loadFromFile("assets/textures/sprite.png")) {
+        return -1; // Error al cargar
+    }
+    
+    sf::Texture backTexture;
+    if (!backTexture.loadFromFile("assets/textures/back.png")) {
+        return -1; // Error al cargar
+    }
+
+    // Crear cartas usando el nuevo sistema
     std::vector<Card> cards;
-    cards.emplace_back("assets/textures/front.png", "assets/textures/back.png", 100.f, 100.f);
-    cards.emplace_back("assets/textures/front.png", "assets/textures/back.png", 250.f, 100.f);
-    cards.emplace_back("assets/textures/front.png", "assets/textures/back.png", 400.f, 100.f);
+    
+    // Ejemplo: As de Corazones, Rey de Picas, Cinco de Diamantes
+    cards.emplace_back(Suit::HEARTS, Rank::ACE, spriteSheet, backTexture, 100.f, 100.f);
+    cards.emplace_back(Suit::SPADES, Rank::KING, spriteSheet, backTexture, 250.f, 100.f);
+    cards.emplace_back(Suit::DIAMONDS, Rank::FIVE, spriteSheet, backTexture, 400.f, 100.f);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -23,7 +36,7 @@ int main() {
                 sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
 
                 for (auto& card : cards) {
-                    sf::FloatRect bounds(card.getPosition(), sf::Vector2f(100.f, 150.f)); // tamaño aproximado de la carta
+                    sf::FloatRect bounds(card.getPosition(), sf::Vector2f(142.f, 198.f));
                     if (bounds.contains(mousePos)) {
                         card.flip();
                     }
