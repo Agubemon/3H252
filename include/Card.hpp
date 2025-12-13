@@ -26,7 +26,7 @@ public:
     // Constructor: recibe Suit y Rank
     Card(Suit s, Rank r, sf::Texture& spriteSheet, sf::Texture& backTex, float x = 0.f, float y = 0.f);
 
-    // Voltear carta
+    // Voltear carta (solo declaración, implementación en Card.cpp)
     void flip();
 
     // Dibujar la carta en la ventana
