@@ -43,6 +43,8 @@ public:
 
     // Saber si está volteada
     bool faceUp() const;
+
+    void forceFaceDown();
     
     // Obtener información de la carta
     Suit getSuit() const { return suit; }

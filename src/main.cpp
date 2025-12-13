@@ -145,6 +145,8 @@ int main() {
     if (!spriteSheet.loadFromFile("assets/textures/sprite.png")) return -1;
     sf::Texture backTexture;
     if (!backTexture.loadFromFile("assets/textures/back.jpg")) return -1;
+    spriteSheet.setSmooth(false);
+    backTexture.setSmooth(false);
 
     sf::SoundBuffer errorBuffer;
     errorBuffer.loadFromFile("assets/Sounds/AudioError.wav");
@@ -294,10 +296,11 @@ int main() {
                             std::vector<Card> temp;
                             for (int i = static_cast<int>(wastePile.cards.size()) - 1; i >= 0; --i) {
                                 Card c = wastePile.cards[i];
-                                if (c.faceUp()) c.flip();
+                                c.forceFaceDown();
                                 c.setPosition(stockPos.x, stockPos.y);
                                 temp.push_back(c);
                             }
+                            std::shuffle(temp.begin(), temp.end(), rng); // barajar al reciclar
                             stockPile = temp;
                             wastePile.cards.clear();
                         } else {
