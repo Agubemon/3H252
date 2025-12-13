@@ -1,33 +1,33 @@
-# Solitario Navideño
+﻿# Solitario Navideno
 
 Juego de cartas Solitario Klondike implementado en C++ con SFML.
 
 ---
 
-## 🎮 Descripción del Proyecto
+## Descripcion del Proyecto
 
-Solitario Navideño es una implementación del clásico juego de cartas Solitario (Klondike) desarrollado en C++ utilizando la biblioteca SFML para gráficos y sonido. El juego cuenta con una interfaz gráfica navideña, efectos de sonido y música de fondo.
+Solitario Navideno es una implementacion del clasico juego de cartas Solitario (Klondike) desarrollado en C++ utilizando la biblioteca SFML para graficos y sonido. El juego cuenta con una interfaz grafica navidena, efectos de sonido y musica de fondo.
 
-### 🎯 Objetivo del Juego
+### Objetivo del Juego
 
-El objetivo es mover todas las 52 cartas a las 4 pilas de fundación (foundation piles), ordenadas por palo desde el As hasta el Rey.
+El objetivo es mover todas las 52 cartas a las 4 pilas de fundacion (foundation piles), ordenadas por palo desde el As hasta el Rey.
 
-### 🎮 Controles
+### Controles
 
 - **Mouse (Click Izquierdo)**: Seleccionar y arrastrar cartas
-- **Mouse (Doble Click)**: Mover automáticamente una carta a las pilas de fundación si es posible
+- **Mouse (Doble Click)**: Mover automaticamente una carta a las pilas de fundacion si es posible
 - **Click en Mazo**: Voltear carta del mazo al descarte
-- **Botón BACK**: Regresar al menú principal
-- **Botón CLOSE**: Cerrar el juego
-- **Icono de Bocina**: Pausar/reanudar música
+- **Boton BACK**: Regresar al menu principal
+- **Boton CLOSE**: Cerrar el juego
+- **Icono de Bocina**: Pausar/reanudar musica
 
-### ⚙️ Mecánicas
+### Mecanicas
 
 **Tableau (7 columnas del tablero):**
 - Se pueden colocar cartas en orden descendente (K, Q, J, 10..., 2, A)
 - Los colores deben alternarse (rojo sobre negro, negro sobre rojo)
-- Solo se puede colocar un Rey en una columna vacía
-- Las cartas se voltean automáticamente cuando quedan expuestas
+- Solo se puede colocar un Rey en una columna vacia
+- Las cartas se voltean automaticamente cuando quedan expuestas
 
 **Foundation (4 pilas superiores):**
 - Cada pila debe empezar con un As del mismo palo
@@ -38,35 +38,35 @@ El objetivo es mover todas las 52 cartas a las 4 pilas de fundación (foundation
 - Click en el mazo voltea cartas al descarte una por una
 - Las cartas del descarte pueden moverse al tableau o foundation
 
-### 🏆 Características
+### Caracteristicas
 
-- Interfaz gráfica navideña personalizada
-- Sistema de arrastre de cartas con validación de movimientos
-- Detección automática de victoria
-- Música de fondo y efectos de sonido
-- Doble click para movimiento automático a fundaciones
-- Pantalla de menú con botón de inicio
+- Interfaz grafica navidena personalizada
+- Sistema de arrastre de cartas con validacion de movimientos
+- Deteccion automatica de victoria
+- Musica de fondo y efectos de sonido
+- Doble click para movimiento automatico a fundaciones
+- Pantalla de menu con boton de inicio
 
-## 👥 Equipo
+## Equipo
 
-- **Líder**: [Nombre Completo] (@usuario-github)
-- **Integrante 2**: [Nombre Completo] (@usuario-github)
-- **Integrante 3**: [Nombre Completo] (@usuario-github)
+- **Lider**: Belen Abigail Aguilar Flores (@Agubemon)
+- **Integrante 2**: Jose Maria Cervantes Salas (@usuario-github)
 
-## 🛠️ Tecnologías
+## Tecnologias
 
 - **Lenguaje**: C++17
-- **Librería Gráfica**: SFML (Simple and Fast Multimedia Library)
+- **Libreria Grafica**: SFML (Simple and Fast Multimedia Library)
 - **Compilador**: GCC (MinGW64)
-- **Sistema de compilación**: Make / Comandos manuales
+- **Sistema de compilacion**: Make / Comandos manuales
 
-### Instalación de SFML en MSYS2
+### Instalacion de SFML en MSYS2
 
 ```bash
 pacman -S mingw-w64-x86_64-gcc
-pacman -S mingw-w64-x86_64-sfml```
+pacman -S mingw-w64-x86_64-sfml
+```
 
-### Compilaci�n y Ejecuci�n
+### Compilacion y Ejecucion
 
 **PowerShell:**
 ```powershell
@@ -78,18 +78,18 @@ cd bin; g++ -std=c++17 -I../include -c ../src/Card.cpp -o Card.o; g++ -std=c++17
 cd bin && g++ -std=c++17 -I../include -c ../src/Card.cpp -o Card.o && g++ -std=c++17 -I../include -c ../src/main.cpp -o main.o && g++ Card.o main.o -o solitaire.exe -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -mwindows && ./solitaire.exe
 ```
 
-##  Cr�ditos
+## Creditos
 
 ### Assets de terceros utilizados
 
 - **Sprites de cartas**: [Fuente]
-- **Im�genes de fondo**: [Fuente]
+- **Imagenes de fondo**: [Fuente]
 - **Iconos**: [Fuente]
 
 ### Sonidos
 
-- **M�sica de men�**: [Fuente]
-- **M�sica de juego**: [Fuente]
+- **Musica de menu**: [Fuente]
+- **Musica de juego**: [Fuente]
 - **Efectos de sonido**: [Fuente]
 
 ### Fuentes
