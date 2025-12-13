@@ -1,5 +1,5 @@
 #pragma once
-#include "Card.h"
+#include "Card.hpp"
 #include <vector>
 #include <algorithm> // Para std::shuffle
 #include <random>    // Para el motor de números aleatorios

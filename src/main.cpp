@@ -1,3 +1,23 @@
+    errorSound.play(); // Prueba: reproducir sonido de error al iniciar el juego
+    sf::sleep(sf::seconds(2)); // Espera 2 segundos para que el sonido se escuche
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+// ...otros includes...
+
+sf::SoundBuffer errorBuffer;
+sf::Sound errorSound;
+
+int main() {
+    if (!errorBuffer.loadFromFile("assets/Sounds/AudioError.wav")) {
+        std::cout << "No se pudo cargar AudioError.wav" << std::endl;
+    }
+    errorSound.setBuffer(errorBuffer);
+    errorSound.setVolume(100.f);
+
+    errorSound.play(); // Prueba: reproducir sonido de error al iniciar el juego
+
+    // ...el resto de tu código...
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include "Card.hpp"
@@ -148,9 +168,10 @@ int main() {
     spriteSheet.setSmooth(false);
     backTexture.setSmooth(false);
 
-    sf::SoundBuffer errorBuffer;
-    errorBuffer.loadFromFile("assets/Sounds/AudioError.wav");
-    sf::Sound errorSound(errorBuffer);
+
+
+int main() {
+
     sf::SoundBuffer winBuffer;
     winBuffer.loadFromFile("assets/Sounds/AudioGanar.wav");
     sf::Sound winSound(winBuffer);
@@ -163,6 +184,7 @@ int main() {
     sf::Music gameMusic;
     gameMusic.openFromFile("assets/Sounds/AudioPantalladeIjuego.wav");
     gameMusic.setLoop(true);
+    // No llamar a gameMusic.play() aquí. Solo se activará con el botón de la bocina.
 
     std::vector<Card> deck = createDeck(spriteSheet, backTexture);
     std::random_device rd;
@@ -249,7 +271,6 @@ int main() {
                     }
                     if (startButton.getGlobalBounds().contains(mousePos)) {
                         menuMusic.stop();
-                        gameMusic.play();
                         currentState = GameState::PLAYING;
                     }
                 }
@@ -421,6 +442,11 @@ int main() {
                                     dest.insert(dest.end(), draggedStack.begin(), draggedStack.end());
                                     tableauPiles[i].updatePositions();
                                     placed = true;
+                                } else {
+                                    if (errorSound.getStatus() != sf::Sound::Playing) {
+                                        errorSound.setVolume(100.f);
+                                        errorSound.play();
+                                    }
                                 }
                             }
                         }
@@ -432,6 +458,7 @@ int main() {
                             tableauPiles[draggedPileIndex].updatePositions();
                         }
                     } else {
+
                         if (draggedPileIndex == -2) {
                             for (auto& c : draggedStack) {
                                 c.setPosition(wastePos.x, wastePos.y);
