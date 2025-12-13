@@ -13,8 +13,8 @@ enum class Rank { ACE = 1, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
 class Card {
 private:
     sf::Sprite sprite;
-    sf::Texture cardTexture;      // Textura del sprite sheet
-    sf::Texture backTexture;      // Textura del reverso
+    const sf::Texture* cardTexture;      // Puntero a textura del sprite sheet
+    const sf::Texture* backTexture;      // Puntero a textura del reverso
     bool isFaceUp;
     Suit suit;
     Rank rank;
@@ -37,6 +37,9 @@ public:
 
     // Obtener posición
     sf::Vector2f getPosition() const;
+
+    // Bounds globales para hit-testing
+    sf::FloatRect getGlobalBounds() const { return sprite.getGlobalBounds(); }
 
     // Saber si está volteada
     bool faceUp() const;

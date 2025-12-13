@@ -2,30 +2,39 @@
 #include <iostream>
 
 // Calcula el rectángulo de textura basado en Suit y Rank
+// Asume un sprite sheet con 13 columnas (ACE..KING) y 4 filas (HEARTS, SPADES, DIAMONDS, CLUBS)
 sf::IntRect Card::getTextureRect(Suit s, Rank r) const {
-    int x = ((int)r - 1) * 142;  // rank va de 1 a 13
-    int y = (int)s * 198;         // suit va de 0 a 3
-    return sf::IntRect(x, y, 142, 198);
+    // Detectar tamaño de celda dinamicamente a partir de la textura
+    const sf::Vector2u texSize = cardTexture->getSize();
+    const int cols = 13;
+    const int rows = 4;
+    const int cellW = (int)(texSize.x / cols);
+    const int cellH = (int)(texSize.y / rows);
+
+    int col = (int)r - 1; // 0..12
+    int row = (int)s;     // 0..3
+    int x = col * cellW;
+    int y = row * cellH;
+    return sf::IntRect(x, y, cellW, cellH);
 }
 
 // Nuevo constructor: usa sprite sheet
 Card::Card(Suit s, Rank r, sf::Texture& spriteSheet, sf::Texture& backTex, float x, float y) 
-    : suit(s), rank(r), isFaceUp(false) {
+    : suit(s), rank(r), isFaceUp(false), cardTexture(&spriteSheet), backTexture(&backTex) {
     
-    sprite.setTexture(backTex); // Empieza mostrando el reverso
+    sprite.setTexture(backTex); // Empieza mostrando el reverso completo
     sprite.setPosition(x, y);
-    
-    // Guardamos referencias a las texturas (ya están cargadas externamente)
-    cardTexture = spriteSheet;
-    backTexture = backTex;
 }
 
 void Card::flip() {
     if (isFaceUp) {
-        sprite.setTexture(backTexture);
+        // Mostrar reverso sin recorte
+        sprite.setTexture(*backTexture, true);
+        sprite.setTextureRect(sf::IntRect());
     } else {
-        sprite.setTexture(cardTexture);
-        sprite.setTextureRect(getTextureRect(suit, rank)); // Selecciona la carta correcta
+        // Mostrar frente usando rect calculado
+        sprite.setTexture(*cardTexture, true);
+        sprite.setTextureRect(getTextureRect(suit, rank));
     }
     isFaceUp = !isFaceUp;
 }
