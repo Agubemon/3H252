@@ -260,8 +260,13 @@ int main() {
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
+            if (event.type == sf::Event::Closed) {
+                // Solo permitir cerrar con X en el menú
+                if (currentState == GameState::MENU) {
+                    window.close();
+                }
+                // En PLAYING, solo el botón CLOSE puede cerrar
+            }
 
             // Manejo de eventos según el estado del juego
             if (currentState == GameState::MENU) {
@@ -293,14 +298,16 @@ int main() {
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
                 
-                // Verificar si se hizo clic en el botón Close
-                if (closeButton.getGlobalBounds().contains(mousePos)) {
+                // Verificar si se hizo clic en el botón Close (solo área del texto)
+                sf::FloatRect closeBounds(0.f, 620.f, 120.f, 30.f); // Área reducida
+                if (closeBounds.contains(mousePos)) {
                     window.close(); // Cerrar el programa
                     continue;
                 }
                 
-                // Verificar si se hizo clic en el botón Back
-                if (backButton.getGlobalBounds().contains(mousePos)) {
+                // Verificar si se hizo clic en el botón Back (solo área del texto)
+                sf::FloatRect backBounds(0.f, 589.f, 120.f, 30.f); // Área reducida
+                if (backBounds.contains(mousePos)) {
                     // Cambiar de música al regresar al menú
                     gameMusic.stop();
                     menuMusic.play();
@@ -332,18 +339,6 @@ int main() {
                         stockPile.pop_back();
                         topCard->flip(); // Voltear boca arriba
                         wastePile.addCard(*topCard);
-                    } else if (!wastePile.cards.empty()) {
-                        // Si el mazo está vacío pero hay cartas en waste, reciclar
-                        // Mover todas las cartas del waste de vuelta al stock
-                        while (!wastePile.cards.empty()) {
-                            Card& card = wastePile.cards.back();
-                            card.flip(); // Voltear boca abajo
-                            card.setPosition(50.f, 30.f); // Posición del stock
-                            stockPile.push_back(&card);
-                            wastePile.cards.pop_back();
-                        }
-                        // Invertir el orden para que la última carta volteada sea la primera en salir
-                        std::reverse(stockPile.begin(), stockPile.end());
                     }
                     continue; // No procesar arrastre
                 }
